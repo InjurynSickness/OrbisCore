@@ -1,0 +1,279 @@
+name: OrbisCore
+version: 1.0.0
+main: com.orbis.core.OrbisCore
+api-version: 1.13
+authors: [OrbisDevs]
+description: Essential commands and utilities for Minecraft servers
+commands:
+  fly:
+    description: Toggle flight mode for yourself or another player
+    usage: /fly [player]
+    aliases: []
+    permission: orbiscore.fly
+    permission-message: §cYou don't have permission to use this command.
+  tp:
+    description: Teleport to another player or teleport a player to another player
+    usage: /tp [player] or /tp [player1] [player2]
+    aliases: [tpo]
+    permission: orbiscore.tp
+    permission-message: §cYou don't have permission to use this command.
+  tphere:
+    description: Teleport a player to your location
+    usage: /tphere [player]
+    aliases: [s]
+    permission: orbiscore.tphere
+    permission-message: §cYou don't have permission to use this command.
+  tpoffline:
+    description: Teleport to a player's last known logout location
+    usage: /tpoffline [player]
+    aliases: []
+    permission: orbiscore.tpoffline
+    permission-message: §cYou don't have permission to use this command.
+  speed:
+    description: Set a player's movement speed
+    usage: /speed [value] [player]
+    aliases: []
+    permission: orbiscore.speed
+    permission-message: §cYou don't have permission to use this command.
+  flyspeed:
+    description: Set a player's flying movement speed
+    usage: /flyspeed [value] [player]
+    aliases: []
+    permission: orbiscore.flyspeed
+    permission-message: §cYou don't have permission to use this command.
+  sudo:
+    description: Make another player say something or execute a command
+    usage: /sudo [player] [message/command]
+    aliases: []
+    permission: orbiscore.sudo
+    permission-message: §cYou don't have permission to use this command.
+  seen:
+    description: Check when a player was last online
+    usage: /seen [player]
+    aliases: []
+    permission: orbiscore.seen
+    permission-message: §cYou don't have permission to use this command.
+  back:
+    description: Teleport to your last death or teleport location
+    usage: /back
+    aliases: []
+    permission: orbiscore.back
+    permission-message: §cYou don't have permission to use this command.
+  ping:
+    description: Check your current ping
+    usage: /ping
+    aliases: []
+    permission: orbiscore.ping
+    permission-message: §cYou don't have permission to use this command.
+  broadcast:
+    description: Broadcast a message to the entire server
+    usage: /broadcast [message]
+    aliases: [shout]
+    permission: orbiscore.broadcast
+    permission-message: §cYou don't have permission to use this command.
+  playtime:
+    description: Check your or another player's playtime
+    usage: /playtime [player]
+    aliases: []
+    permission: orbiscore.playtime
+    permission-message: §cYou don't have permission to use this command.
+  nickname:
+    description: Set your or another player's nickname
+    usage: /nickname [nickname] [player]
+    aliases: [nick]
+    permission: orbiscore.nickname
+    permission-message: §cYou don't have permission to use this command.
+  gmc:
+    description: Set gamemode to creative
+    usage: /gmc [player]
+    aliases: []
+    permission: orbiscore.gamemode.creative
+    permission-message: §cYou don't have permission to use this command.
+  gms:
+    description: Set gamemode to survival
+    usage: /gms [player]
+    aliases: []
+    permission: orbiscore.gamemode.survival
+    permission-message: §cYou don't have permission to use this command.
+  gma:
+    description: Set gamemode to adventure
+    usage: /gma [player]
+    aliases: []
+    permission: orbiscore.gamemode.adventure
+    permission-message: §cYou don't have permission to use this command.
+  gmsp:
+    description: Set gamemode to spectator
+    usage: /gmsp [player]
+    aliases: []
+    permission: orbiscore.gamemode.spectator
+    permission-message: §cYou don't have permission to use this command.
+  heal:
+    description: Heal yourself or another player
+    usage: /heal [player]
+    aliases: []
+    permission: orbiscore.heal
+    permission-message: §cYou don't have permission to use this command.
+
+permissions:
+  orbiscore.*:
+    description: Gives access to all OrbisCore commands
+    default: op
+    children:
+      orbiscore.fly: true
+      orbiscore.fly.others: true
+      orbiscore.tp: true
+      orbiscore.tp.others: true
+      orbiscore.tpoffline: true
+      orbiscore.speed: true
+      orbiscore.speed.others: true
+      orbiscore.flyspeed: true
+      orbiscore.flyspeed.others: true
+      orbiscore.sudo: true
+      orbiscore.seen: true
+      orbiscore.seen.ip: true
+      orbiscore.back: true
+      orbiscore.ping: true
+      orbiscore.broadcast: true
+      orbiscore.playtime: true
+      orbiscore.playtime.others: true
+      orbiscore.nickname: true
+      orbiscore.nickname.others: true
+      orbiscore.nickname.color: true
+      orbiscore.gamemode.creative: true
+      orbiscore.gamemode.survival: true
+      orbiscore.gamemode.adventure: true
+      orbiscore.gamemode.spectator: true
+      orbiscore.gamemode.others: true
+      orbiscore.heal: true
+      orbiscore.heal.others: true
+
+  orbiscore.fly:
+    description: Allows use of /fly
+    default: op
+
+  orbiscore.fly.others:
+    description: Allows toggling flight for other players
+    default: op
+    children:
+      orbiscore.fly: true
+
+  orbiscore.tp:
+    description: Allows use of /tp
+    default: op
+
+  orbiscore.tp.others:
+    description: Allows teleporting other players
+    default: op
+    children:
+      orbiscore.tp: true
+
+  orbiscore.tpoffline:
+    description: Allows teleporting to offline players' logout locations
+    default: op
+
+  orbiscore.speed:
+    description: Allows changing movement speed
+    default: op
+
+  orbiscore.speed.others:
+    description: Allows changing other players' movement speed
+    default: op
+    children:
+      orbiscore.speed: true
+
+  orbiscore.flyspeed:
+    description: Allows changing fly speed
+    default: op
+
+  orbiscore.flyspeed.others:
+    description: Allows changing other players' fly speed
+    default: op
+    children:
+      orbiscore.flyspeed: true
+
+  orbiscore.sudo:
+    description: Allows making other players execute commands or chat
+    default: op
+
+  orbiscore.seen:
+    description: Allows checking when players were last online
+    default: op
+
+  orbiscore.seen.ip:
+    description: Allows viewing IP addresses in /seen
+    default: op
+    children:
+      orbiscore.seen: true
+
+  orbiscore.back:
+    description: Allows teleporting to previous location
+    default: op
+
+  orbiscore.ping:
+    description: Allows checking ping
+    default: true
+
+  orbiscore.broadcast:
+    description: Allows broadcasting messages to the server
+    default: op
+
+  orbiscore.playtime:
+    description: Allows checking own playtime
+    default: true
+
+  orbiscore.playtime.others:
+    description: Allows checking other players' playtime
+    default: op
+    children:
+      orbiscore.playtime: true
+
+  orbiscore.nickname:
+    description: Allows setting own nickname
+    default: op
+
+  orbiscore.nickname.others:
+    description: Allows setting other players' nicknames
+    default: op
+    children:
+      orbiscore.nickname: true
+
+  orbiscore.nickname.color:
+    description: Allows using color codes in nicknames
+    default: op
+    children:
+      orbiscore.nickname: true
+
+  orbiscore.gamemode.creative:
+    description: Allows changing to creative mode
+    default: op
+
+  orbiscore.gamemode.survival:
+    description: Allows changing to survival mode
+    default: op
+
+  orbiscore.gamemode.adventure:
+    description: Allows changing to adventure mode
+    default: op
+
+  orbiscore.gamemode.spectator:
+    description: Allows changing to spectator mode
+    default: op
+
+  orbiscore.gamemode.others:
+    description: Allows changing other players' gamemode
+    default: op
+    children:
+      orbiscore.gamemode.creative: true
+      orbiscore.gamemode.survival: true
+      orbiscore.gamemode.adventure: true
+      orbiscore.gamemode.spectator: true
+
+  orbiscore.heal:
+    description: Allows healing self
+    default: op
+
+  orbiscore.heal.others:
+    description: Allows healing other players
+    default: op
+    children:
+      orbiscore.heal: true
