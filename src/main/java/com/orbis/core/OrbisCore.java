@@ -5,6 +5,7 @@ import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.listeners.BloodEffectListener;
 import com.orbis.core.listeners.PlayerConnectionListener;
 import com.orbis.core.listeners.PlayerDeathListener;
+import com.orbis.core.listeners.GodmodeListener;
 import com.orbis.core.tab.PlayerTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -54,6 +55,9 @@ public class OrbisCore extends JavaPlugin {
     public void onDisable() {
         // Cancel all tasks
         Bukkit.getScheduler().cancelTasks(this);
+
+        // Clear godmode for all players
+        GodmodeCommand.clearAllGodmode();
 
         // Save all player data
         playerDataManager.saveAllPlayerData();
@@ -111,6 +115,10 @@ public class OrbisCore extends JavaPlugin {
         config.set("messages.suicide.cooldown", "&cTry again in {time}.");
         config.set("messages.blood.enabled", "&aBlood effect enabled.");
         config.set("messages.blood.disabled", "&cBlood effect disabled.");
+        
+        // Godmode messages
+        config.set("messages.godmode.enabled", "&aGodmode enabled.");
+        config.set("messages.godmode.disabled", "&cGodmode disabled.");
     }
 
     /**
@@ -152,6 +160,7 @@ public class OrbisCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new BloodEffectListener(this, playerDataManager), this);
+        getServer().getPluginManager().registerEvents(new GodmodeListener(), this);
     }
 
     /**
@@ -182,6 +191,12 @@ public class OrbisCore extends JavaPlugin {
         getCommand("heal").setExecutor(new HealCommand(this));
         getCommand("suicide").setExecutor(new SuicideCommand(this));
         getCommand("toggleblood").setExecutor(new ToggleBloodCommand(this, playerDataManager));
+        getCommand("godmode").setExecutor(new GodmodeCommand(this));
+        getCommand("map").setExecutor(new MapCommand(this));
+        getCommand("discord").setExecutor(new DiscordCommand(this));
+        getCommand("store").setExecutor(new StoreCommand(this));
+        getCommand("website").setExecutor(new WebsiteCommand(this));
+        getCommand("vote").setExecutor(new VoteCommand(this));
         getCommand("orbiscore").setExecutor(new ReloadCommand(this));
 
         // Set tab completers
@@ -199,6 +214,7 @@ public class OrbisCore extends JavaPlugin {
         getCommand("gma").setTabCompleter(playerTabCompleter);
         getCommand("gmsp").setTabCompleter(playerTabCompleter);
         getCommand("heal").setTabCompleter(playerTabCompleter);
+        getCommand("godmode").setTabCompleter(playerTabCompleter);
     }
 
     /**

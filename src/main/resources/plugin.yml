@@ -113,6 +113,54 @@ commands:
     aliases: []
     permission: orbiscore.heal
     permission-message: §cYou don't have permission to use this command.
+  suicide:
+    description: Commit suicide with a 1 hour cooldown
+    usage: /suicide
+    aliases: []
+    permission: orbiscore.suicide
+    permission-message: §cYou don't have permission to use this command.
+  toggleblood:
+    description: Toggle blood effect visibility
+    usage: /toggleblood
+    aliases: []
+    permission: orbiscore.toggleblood
+    permission-message: §cYou don't have permission to use this command.
+  godmode:
+    description: Toggle godmode (invincibility) for yourself or another player
+    usage: /godmode [player]
+    aliases: [god]
+    permission: orbiscore.godmode
+    permission-message: §cYou don't have permission to use this command.
+  map:
+    description: Show a clickable link to the server map with your current location
+    usage: /map
+    aliases: []
+    permission: orbiscore.map
+    permission-message: §cYou don't have permission to use this command.
+  discord:
+    description: Show a clickable link to the Discord server
+    usage: /discord
+    aliases: []
+    permission: orbiscore.discord
+    permission-message: §cYou don't have permission to use this command.
+  store:
+    description: Show a clickable link to the server store
+    usage: /store
+    aliases: [shop]
+    permission: orbiscore.store
+    permission-message: §cYou don't have permission to use this command.
+  website:
+    description: Show a clickable link to the server website
+    usage: /website
+    aliases: [web]
+    permission: orbiscore.website
+    permission-message: §cYou don't have permission to use this command.
+  vote:
+    description: Show clickable links to all voting sites
+    usage: /vote
+    aliases: []
+    permission: orbiscore.vote
+    permission-message: §cYou don't have permission to use this command.
   orbiscore:
     description: Main OrbisCore command for reloading and info
     usage: /orbiscore [reload]
@@ -154,8 +202,18 @@ permissions:
       orbiscore.gamemode.others: true
       orbiscore.heal: true
       orbiscore.heal.others: true
+      orbiscore.suicide: true
+      orbiscore.toggleblood: true
+      orbiscore.godmode: true
+      orbiscore.godmode.others: true
+      orbiscore.map: true
+      orbiscore.discord: true
+      orbiscore.store: true
+      orbiscore.website: true
+      orbiscore.vote: true
       orbiscore.reload: true
       orbiscore.use: true
+      orbiscore.admin: true
 
   orbiscore.use:
     description: Allows basic use of OrbisCore commands
@@ -292,32 +350,53 @@ permissions:
       orbiscore.gamemode.adventure: true
       orbiscore.gamemode.spectator: true
 
-  heal:
-    description: Heal yourself or another player
-    usage: /heal [player]
-    aliases: []
-    permission: orbiscore.heal
-    permission-message: §cYou don't have permission to use this command.
-
-  suicide:
-    description: Commit suicide with a 1 hour cooldown
-    usage: /suicide
-    aliases: []
-    permission: orbiscore.suicide
-    permission-message: §cYou don't have permission to use this command.
-
-  toggleblood:
-    description: Toggle blood effect visibility
-    usage: /toggleblood
-    aliases: []
-    permission: orbiscore.toggleblood
-    permission-message: §cYou don't have permission to use this command.
+  orbiscore.heal:
+    description: Allows healing yourself
+    default: op
 
   orbiscore.heal.others:
     description: Allows healing other players
     default: op
     children:
       orbiscore.heal: true
+
+  orbiscore.suicide:
+    description: Allows use of /suicide
+    default: true
+
+  orbiscore.toggleblood:
+    description: Allows toggling blood effect visibility
+    default: true
+
+  orbiscore.godmode:
+    description: Allows toggling godmode for yourself
+    default: op
+
+  orbiscore.godmode.others:
+    description: Allows toggling godmode for other players
+    default: op
+    children:
+      orbiscore.godmode: true
+
+  orbiscore.map:
+    description: Allows use of /map command
+    default: true
+
+  orbiscore.discord:
+    description: Allows use of /discord command
+    default: true
+
+  orbiscore.store:
+    description: Allows use of /store command
+    default: true
+
+  orbiscore.website:
+    description: Allows use of /website command
+    default: true
+
+  orbiscore.vote:
+    description: Allows use of /vote command
+    default: true
 
   orbiscore.reload:
     description: Allows reloading the plugin configuration
