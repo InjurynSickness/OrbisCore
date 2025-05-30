@@ -25,13 +25,26 @@ public class GamemodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players or specify a target."));
             return true;
         }
 
         // Set own gamemode
         if (args.length == 0) {
             Player player = (Player) sender;
+
+            // Check permission based on gamemode
+            String permission = "orbiscore.gamemode." + gameMode.name().toLowerCase();
+            if (!player.hasPermission(permission)) {
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                return true;
+            }
+
+            if (player.getGameMode() == gameMode) {
+                player.sendMessage(MessageUtils.colorize("&cYou are already in " + gameMode.name().toLowerCase() + " mode!"));
+                return true;
+            }
+
             player.setGameMode(gameMode);
             player.sendMessage(MessageUtils.colorize("&aGamemode set to &f" + gameMode.name().toLowerCase() + "&a!"));
             return true;
@@ -39,19 +52,24 @@ public class GamemodeCommand implements CommandExecutor {
 
         // Set another player's gamemode
         if (!sender.hasPermission("orbiscore.gamemode.others")) {
-            sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to change other players' gamemode!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+            return true;
+        }
+
+        if (target.getGameMode() == gameMode) {
+            sender.sendMessage(MessageUtils.colorize("&c" + target.getName() + " is already in " + gameMode.name().toLowerCase() + " mode!"));
             return true;
         }
 
         target.setGameMode(gameMode);
         sender.sendMessage(MessageUtils.colorize("&aSet " + target.getName() + "'s gamemode to &f" + gameMode.name().toLowerCase() + "&a!"));
-        target.sendMessage(MessageUtils.colorize("&aYour gamemode was set to &f" + gameMode.name().toLowerCase() + "&a!"));
+        target.sendMessage(MessageUtils.colorize("&aYour gamemode was set to &f" + gameMode.name().toLowerCase() + "&a by " + sender.getName() + "!"));
 
         return true;
     }

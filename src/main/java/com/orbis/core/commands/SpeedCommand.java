@@ -22,7 +22,7 @@ public class SpeedCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length < 2) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players or specify a target."));
             return true;
         }
 
@@ -40,7 +40,7 @@ public class SpeedCommand implements CommandExecutor {
                 return true;
             }
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtils.colorize("&cInvalid speed value!"));
+            sender.sendMessage(MessageUtils.colorize("&cInvalid speed value! Must be a number between 0 and 10."));
             return true;
         }
 
@@ -50,6 +50,13 @@ public class SpeedCommand implements CommandExecutor {
         // Set speed for self or another player
         if (args.length == 1) {
             Player player = (Player) sender;
+
+            // Check permission
+            if (!player.hasPermission("orbiscore.speed")) {
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                return true;
+            }
+
             if (player.isFlying()) {
                 player.setFlySpeed(mcSpeed);
             } else {
@@ -58,13 +65,13 @@ public class SpeedCommand implements CommandExecutor {
             player.sendMessage(MessageUtils.colorize("&aSet your speed to " + speed));
         } else {
             if (!sender.hasPermission("orbiscore.speed.others")) {
-                sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to change other players' speed!"));
+                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[1] + " is not online!"));
+                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[1])));
                 return true;
             }
 
@@ -75,7 +82,7 @@ public class SpeedCommand implements CommandExecutor {
             }
 
             sender.sendMessage(MessageUtils.colorize("&aSet " + target.getName() + "'s speed to " + speed));
-            target.sendMessage(MessageUtils.colorize("&aYour speed was set to " + speed));
+            target.sendMessage(MessageUtils.colorize("&aYour speed was set to " + speed + " by " + sender.getName()));
         }
 
         return true;

@@ -61,7 +61,7 @@ commands:
     permission-message: §cYou don't have permission to use this command.
   ping:
     description: Check your current ping
-    usage: /ping
+    usage: /ping [player]
     aliases: []
     permission: orbiscore.ping
     permission-message: §cYou don't have permission to use this command.
@@ -113,6 +113,12 @@ commands:
     aliases: []
     permission: orbiscore.heal
     permission-message: §cYou don't have permission to use this command.
+  orbiscore:
+    description: Main OrbisCore command for reloading and info
+    usage: /orbiscore [reload]
+    aliases: [oc]
+    permission: orbiscore.use
+    permission-message: §cYou don't have permission to use this command.
 
 permissions:
   orbiscore.*:
@@ -123,6 +129,7 @@ permissions:
       orbiscore.fly.others: true
       orbiscore.tp: true
       orbiscore.tp.others: true
+      orbiscore.tphere: true
       orbiscore.tpoffline: true
       orbiscore.speed: true
       orbiscore.speed.others: true
@@ -133,6 +140,7 @@ permissions:
       orbiscore.seen.ip: true
       orbiscore.back: true
       orbiscore.ping: true
+      orbiscore.ping.others: true
       orbiscore.broadcast: true
       orbiscore.playtime: true
       orbiscore.playtime.others: true
@@ -146,6 +154,12 @@ permissions:
       orbiscore.gamemode.others: true
       orbiscore.heal: true
       orbiscore.heal.others: true
+      orbiscore.reload: true
+      orbiscore.use: true
+
+  orbiscore.use:
+    description: Allows basic use of OrbisCore commands
+    default: true
 
   orbiscore.fly:
     description: Allows use of /fly
@@ -166,6 +180,10 @@ permissions:
     default: op
     children:
       orbiscore.tp: true
+
+  orbiscore.tphere:
+    description: Allows teleporting players to your location
+    default: op
 
   orbiscore.tpoffline:
     description: Allows teleporting to offline players' logout locations
@@ -212,6 +230,12 @@ permissions:
   orbiscore.ping:
     description: Allows checking ping
     default: true
+
+  orbiscore.ping.others:
+    description: Allows checking other players' ping
+    default: op
+    children:
+      orbiscore.ping: true
 
   orbiscore.broadcast:
     description: Allows broadcasting messages to the server
@@ -268,12 +292,33 @@ permissions:
       orbiscore.gamemode.adventure: true
       orbiscore.gamemode.spectator: true
 
-  orbiscore.heal:
-    description: Allows healing self
-    default: op
+  heal:
+    description: Heal yourself or another player
+    usage: /heal [player]
+    aliases: []
+    permission: orbiscore.heal
+    permission-message: §cYou don't have permission to use this command.
+
+  suicide:
+    description: Commit suicide with a 1 hour cooldown
+    usage: /suicide
+    aliases: []
+    permission: orbiscore.suicide
+    permission-message: §cYou don't have permission to use this command.
+
+  toggleblood:
+    description: Toggle blood effect visibility
+    usage: /toggleblood
+    aliases: []
+    permission: orbiscore.toggleblood
+    permission-message: §cYou don't have permission to use this command.
 
   orbiscore.heal.others:
     description: Allows healing other players
     default: op
     children:
       orbiscore.heal: true
+
+  orbiscore.reload:
+    description: Allows reloading the plugin configuration
+    default: op

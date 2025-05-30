@@ -30,13 +30,19 @@ public class FlyCommand implements CommandExecutor {
         if (args.length == 0) {
             Player player = (Player) sender;
 
+            // Check permission
+            if (!player.hasPermission("orbiscore.fly")) {
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                return true;
+            }
+
             boolean canFly = !player.getAllowFlight();
             player.setAllowFlight(canFly);
 
             if (canFly) {
-                player.sendMessage(MessageUtils.colorize("&aFlight mode enabled."));
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("fly.enabled")));
             } else {
-                player.sendMessage(MessageUtils.colorize("&cFlight mode disabled."));
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("fly.disabled")));
             }
 
             return true;
@@ -44,13 +50,13 @@ public class FlyCommand implements CommandExecutor {
 
         // With argument - toggle flight for another player
         if (!sender.hasPermission("orbiscore.fly.others")) {
-            sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to toggle flight for other players!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
             return true;
         }
 
@@ -59,10 +65,10 @@ public class FlyCommand implements CommandExecutor {
 
         if (canFly) {
             sender.sendMessage(MessageUtils.colorize("&aEnabled flight mode for " + target.getName() + "."));
-            target.sendMessage(MessageUtils.colorize("&aYour flight mode has been enabled."));
+            target.sendMessage(MessageUtils.colorize(plugin.getMessage("fly.enabled")));
         } else {
             sender.sendMessage(MessageUtils.colorize("&cDisabled flight mode for " + target.getName() + "."));
-            target.sendMessage(MessageUtils.colorize("&cYour flight mode has been disabled."));
+            target.sendMessage(MessageUtils.colorize(plugin.getMessage("fly.disabled")));
         }
 
         return true;

@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 /**
  * Command to teleport a player to the command sender
  */
@@ -35,10 +37,15 @@ public class TpHereCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        Player target = Bukkit.getPlayer(args[0]);
 
+        Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            player.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+            player.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+            return true;
+        }
+
+        if (target.equals(player)) {
+            player.sendMessage(MessageUtils.colorize("&cYou cannot teleport yourself to yourself!"));
             return true;
         }
 

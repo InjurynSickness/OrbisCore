@@ -2,12 +2,18 @@ package com.orbis.core;
 
 import com.orbis.core.commands.*;
 import com.orbis.core.data.PlayerDataManager;
+import com.orbis.core.listeners.BloodEffectListener;
 import com.orbis.core.listeners.PlayerConnectionListener;
 import com.orbis.core.listeners.PlayerDeathListener;
 import com.orbis.core.tab.PlayerTabCompleter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * Main class for the OrbisCore plugin
@@ -15,6 +21,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class OrbisCore extends JavaPlugin {
 
     private PlayerDataManager playerDataManager;
+    private FileConfiguration config;
+    private File configFile;
 
     @Override
     public void onEnable() {
@@ -23,7 +31,10 @@ public class OrbisCore extends JavaPlugin {
             getDataFolder().mkdir();
         }
 
-        // Initialize player data manager
+        // Load configuration
+        loadConfiguration();
+
+        // Initialize managers
         playerDataManager = new PlayerDataManager(this);
 
         // Register event listeners
@@ -32,15 +43,106 @@ public class OrbisCore extends JavaPlugin {
         // Register commands
         registerCommands();
 
+        // Start auto-save task
+        startAutoSaveTask();
+
         getLogger().info("OrbisCore has been enabled!");
+        getLogger().info("Loaded configuration with " + getPluginConfig().getKeys(false).size() + " settings");
     }
 
     @Override
     public void onDisable() {
+        // Cancel all tasks
+        Bukkit.getScheduler().cancelTasks(this);
+
         // Save all player data
         playerDataManager.saveAllPlayerData();
 
         getLogger().info("OrbisCore has been disabled!");
+    }
+
+    /**
+     * Load or create configuration file
+     */
+    private void loadConfiguration() {
+        configFile = new File(getDataFolder(), "config.yml");
+
+        if (!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+                // Create default config
+                config = YamlConfiguration.loadConfiguration(configFile);
+                setDefaultConfig();
+                saveConfiguration();
+                getLogger().info("Created default configuration file");
+            } catch (IOException e) {
+                getLogger().log(Level.SEVERE, "Could not create config.yml", e);
+            }
+        } else {
+            config = YamlConfiguration.loadConfiguration(configFile);
+        }
+    }
+
+    /**
+     * Set default configuration values
+     */
+    private void setDefaultConfig() {
+        config.set("settings.auto-save-interval", 300); // 5 minutes
+        config.set("settings.max-nickname-length", 16);
+        config.set("settings.allow-color-codes", true);
+
+        // Messages
+        config.set("messages.no-permission", "&cYou don't have permission to use this command!");
+        config.set("messages.player-not-online", "&cPlayer {player} is not online!");
+        config.set("messages.player-not-found", "&cPlayer {player} has never been seen on this server!");
+        config.set("messages.config-reloaded", "&aConfiguration reloaded successfully!");
+
+        // Command specific messages
+        config.set("messages.fly.enabled", "&aFlight mode enabled.");
+        config.set("messages.fly.disabled", "&cFlight mode disabled.");
+        config.set("messages.heal.self", "&aYou have been healed!");
+        config.set("messages.heal.other", "&aHealed {player}!");
+        config.set("messages.nickname.set", "&aYour nickname has been set to: &r{nickname}");
+        config.set("messages.nickname.reset", "&aYour nickname has been reset!");
+        config.set("messages.nickname.too-long", "&cNickname too long! Max {max} characters.");
+
+        // New messages for suicide and blood effect
+        config.set("messages.suicide.broadcast", "&c{player} has committed suicide.");
+        config.set("messages.suicide.cooldown", "&cTry again in {time}.");
+        config.set("messages.blood.enabled", "&aBlood effect enabled.");
+        config.set("messages.blood.disabled", "&cBlood effect disabled.");
+    }
+
+    /**
+     * Save configuration file
+     */
+    private void saveConfiguration() {
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Could not save config.yml", e);
+        }
+    }
+
+    /**
+     * Reload configuration and player data
+     */
+    public void reloadConfiguration() {
+        config = YamlConfiguration.loadConfiguration(configFile);
+        playerDataManager.reloadPlayerData();
+        getLogger().info("Configuration and player data reloaded!");
+    }
+
+    /**
+     * Start auto-save task
+     */
+    private void startAutoSaveTask() {
+        int interval = config.getInt("settings.auto-save-interval", 300) * 20; // Convert to ticks
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            playerDataManager.saveAllPlayerData();
+            getLogger().info("Auto-saved player data");
+        }, interval, interval);
     }
 
     /**
@@ -49,6 +151,7 @@ public class OrbisCore extends JavaPlugin {
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, playerDataManager), this);
+        getServer().getPluginManager().registerEvents(new BloodEffectListener(this, playerDataManager), this);
     }
 
     /**
@@ -77,6 +180,9 @@ public class OrbisCore extends JavaPlugin {
         getCommand("gma").setExecutor(new GamemodeCommand(this, GameMode.ADVENTURE));
         getCommand("gmsp").setExecutor(new GamemodeCommand(this, GameMode.SPECTATOR));
         getCommand("heal").setExecutor(new HealCommand(this));
+        getCommand("suicide").setExecutor(new SuicideCommand(this));
+        getCommand("toggleblood").setExecutor(new ToggleBloodCommand(this, playerDataManager));
+        getCommand("orbiscore").setExecutor(new ReloadCommand(this));
 
         // Set tab completers
         getCommand("fly").setTabCompleter(playerTabCompleter);
@@ -102,5 +208,43 @@ public class OrbisCore extends JavaPlugin {
      */
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
+    }
+
+    /**
+     * Get the plugin configuration
+     *
+     * @return The plugin configuration
+     */
+    public FileConfiguration getPluginConfig() {
+        return config;
+    }
+
+    /**
+     * Get a formatted message from config
+     *
+     * @param key The message key
+     * @return The formatted message
+     */
+    public String getMessage(String key) {
+        return config.getString("messages." + key, "&cMessage not found: " + key);
+    }
+
+    /**
+     * Get a formatted message from config with placeholders
+     *
+     * @param key The message key
+     * @param placeholders Key-value pairs for placeholders
+     * @return The formatted message
+     */
+    public String getMessage(String key, String... placeholders) {
+        String message = getMessage(key);
+
+        for (int i = 0; i < placeholders.length; i += 2) {
+            if (i + 1 < placeholders.length) {
+                message = message.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
+            }
+        }
+
+        return message;
     }
 }

@@ -38,12 +38,14 @@ public class TpOfflineCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
+        UUID uuid = player.getUniqueId();
+
         String targetName = args[0].toLowerCase();
 
         // Try to find UUID from username
         UUID targetUuid = playerDataManager.getUuidFromName(targetName);
         if (targetUuid == null) {
-            player.sendMessage(MessageUtils.colorize("&cNo stored data for player " + args[0] + "!"));
+            player.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-found", "player", args[0])));
             return true;
         }
 
@@ -54,15 +56,47 @@ public class TpOfflineCommand implements CommandExecutor {
             return true;
         }
 
-        // Get location and teleport
-        Location location = LocationConverter.stringToLocation(locString);
+        // Get location and validate it
+        Location location;
+        try {
+            location = LocationConverter.stringToLocation(locString);
+        } catch (Exception e) {
+            player.sendMessage(MessageUtils.colorize("&cInvalid location data for " + args[0] + "!"));
+            plugin.getLogger().warning("Invalid location string for " + args[0] + ": " + locString);
+            return true;
+        }
+
+        if (!isValidLocation(location)) {
+            player.sendMessage(MessageUtils.colorize("&cUnsafe or invalid location for " + args[0] + "!"));
+            return true;
+        }
 
         // Store current location for back command
-        playerDataManager.recordTeleportLocation(player.getUniqueId(), player.getLocation());
+        playerDataManager.recordTeleportLocation(uuid, player.getLocation());
 
         player.teleport(location);
         player.sendMessage(MessageUtils.colorize("&aTeleported to " + args[0] + "'s last logout location"));
 
         return true;
+    }
+
+    /**
+     * Check if a location is valid and safe
+     *
+     * @param location The location to check
+     * @return True if the location is valid
+     */
+    private boolean isValidLocation(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return false;
+        }
+
+        // Check if world exists in server
+        if (org.bukkit.Bukkit.getWorld(location.getWorld().getName()) == null) {
+            return false;
+        }
+
+        // Basic safety check - ensure location is not in void
+        return location.getY() > -64;
     }
 }

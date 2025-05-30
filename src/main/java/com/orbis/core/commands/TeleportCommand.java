@@ -9,6 +9,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 /**
  * Command to teleport players
  */
@@ -38,15 +40,22 @@ public class TeleportCommand implements CommandExecutor {
         // One argument - teleport self to player
         if (args.length == 1) {
             Player player = (Player) sender;
-            Player target = Bukkit.getPlayer(args[0]);
+            UUID uuid = player.getUniqueId();
 
+            Player target = Bukkit.getPlayer(args[0]);
             if (target == null) {
-                player.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+                player.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+                return true;
+            }
+
+            // Check if trying to teleport to self
+            if (target.equals(player)) {
+                player.sendMessage(MessageUtils.colorize("&cYou cannot teleport to yourself!"));
                 return true;
             }
 
             // Store current location for /back command
-            playerDataManager.recordTeleportLocation(player.getUniqueId(), player.getLocation());
+            playerDataManager.recordTeleportLocation(uuid, player.getLocation());
 
             player.teleport(target);
             player.sendMessage(MessageUtils.colorize("&aTeleported to " + target.getName()));
@@ -56,7 +65,7 @@ public class TeleportCommand implements CommandExecutor {
 
         // Two arguments - teleport player1 to player2
         if (!sender.hasPermission("orbiscore.tp.others")) {
-            sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to teleport other players!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
             return true;
         }
 
@@ -64,12 +73,17 @@ public class TeleportCommand implements CommandExecutor {
         Player player2 = Bukkit.getPlayer(args[1]);
 
         if (player1 == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
             return true;
         }
 
         if (player2 == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[1] + " is not online!"));
+            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[1])));
+            return true;
+        }
+
+        if (player1.equals(player2)) {
+            sender.sendMessage(MessageUtils.colorize("&cYou cannot teleport a player to themselves!"));
             return true;
         }
 
