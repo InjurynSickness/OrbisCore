@@ -2,6 +2,9 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,7 +34,7 @@ public class SuicideCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
@@ -43,7 +46,13 @@ public class SuicideCommand implements CommandExecutor {
             long timeLeft = cooldowns.get(uuid) - System.currentTimeMillis();
             if (timeLeft > 0) {
                 String remainingTime = formatTime(timeLeft);
-                player.sendMessage(MessageUtils.colorize("&cTry again in " + remainingTime + "."));
+                
+                Component cooldownMsg = Component.text("⏱ ", NamedTextColor.RED, TextDecoration.BOLD)
+                    .append(Component.text("Try again in ", NamedTextColor.RED))
+                    .append(Component.text(remainingTime, NamedTextColor.YELLOW))
+                    .append(Component.text(".", NamedTextColor.RED));
+                
+                player.sendMessage(cooldownMsg);
                 return true;
             }
         }
@@ -51,8 +60,12 @@ public class SuicideCommand implements CommandExecutor {
         // Set cooldown
         cooldowns.put(uuid, System.currentTimeMillis() + COOLDOWN_TIME);
 
-        // Broadcast suicide message
-        Bukkit.broadcastMessage(MessageUtils.colorize("&c" + player.getName() + " has committed suicide."));
+        // Broadcast suicide message with skull emoji
+        Component broadcastMsg = Component.text("💀 ", NamedTextColor.DARK_RED)
+            .append(Component.text(player.getName(), NamedTextColor.WHITE))
+            .append(Component.text(" has committed suicide.", NamedTextColor.RED));
+        
+        Bukkit.broadcast(broadcastMsg);
 
         // Kill the player
         player.setHealth(0);
@@ -62,40 +75,54 @@ public class SuicideCommand implements CommandExecutor {
             @Override
             public void run() {
                 if (player.isOnline()) {
-                    // Apply saturation potion of tier -1 (removes saturation)
-                    player.addPotionEffect(new PotionEffect(
-                            PotionEffectType.SATURATION,
-                            60, // 3 seconds (20 ticks per second)
-                            -1, // Tier -1
-                            true, // Ambient
-                            false, // Show particles
-                            false  // Show icon
-                    ));
-
-                    // Apply hunger potion of tier 4
-                    player.addPotionEffect(new PotionEffect(
-                            PotionEffectType.HUNGER,
-                            60, // 3 seconds
-                            4, // Tier 4
-                            true, // Ambient
-                            false, // Show particles
-                            false  // Show icon
-                    ));
-
-                    // Apply weakness potion of tier 4
-                    player.addPotionEffect(new PotionEffect(
-                            PotionEffectType.WEAKNESS,
-                            60, // 3 seconds
-                            4, // Tier 4
-                            true, // Ambient
-                            false, // Show particles
-                            false  // Show icon
-                    ));
+                    // Apply debuff effects
+                    applyDebuffEffects(player);
+                    
+                    // Send debuff notification
+                    Component debuffMsg = Component.text("⚠ ", NamedTextColor.YELLOW, TextDecoration.BOLD)
+                        .append(Component.text("You feel weakened from your suicide...", NamedTextColor.GRAY, TextDecoration.ITALIC));
+                    
+                    player.sendMessage(debuffMsg);
                 }
             }
         }.runTaskLater(plugin, 60L); // 60 ticks = 3 seconds
 
         return true;
+    }
+
+    /**
+     * Apply debuff effects to the player
+     */
+    private void applyDebuffEffects(Player player) {
+        // Apply saturation potion of tier -1 (removes saturation)
+        player.addPotionEffect(new PotionEffect(
+                PotionEffectType.SATURATION,
+                60, // 3 seconds (20 ticks per second)
+                -1, // Tier -1
+                true, // Ambient
+                false, // Show particles
+                false  // Show icon
+        ));
+
+        // Apply hunger potion of tier 4
+        player.addPotionEffect(new PotionEffect(
+                PotionEffectType.HUNGER,
+                60, // 3 seconds
+                4, // Tier 4
+                true, // Ambient
+                false, // Show particles
+                false  // Show icon
+        ));
+
+        // Apply weakness potion of tier 4
+        player.addPotionEffect(new PotionEffect(
+                PotionEffectType.WEAKNESS,
+                60, // 3 seconds
+                4, // Tier 4
+                true, // Ambient
+                false, // Show particles
+                false  // Show icon
+        ));
     }
 
     /**

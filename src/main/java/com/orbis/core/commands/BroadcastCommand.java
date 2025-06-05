@@ -21,7 +21,7 @@ public class BroadcastCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /broadcast [message]"));
+            sender.sendMessage(MessageUtils.error("Usage: /broadcast [message]"));
             return true;
         }
 
@@ -32,8 +32,8 @@ public class BroadcastCommand implements CommandExecutor {
         }
         String message = messageBuilder.toString().trim();
 
-        // Broadcast the message
-        Bukkit.broadcastMessage(MessageUtils.colorize("&8[&4&lBROADCAST&8] &f" + message));
+        // Broadcast the message using Adventure API
+        Bukkit.broadcast(MessageUtils.broadcast(message));
         return true;
     }
 }

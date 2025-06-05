@@ -3,6 +3,8 @@ package com.orbis.core.commands;
 import com.orbis.core.OrbisCore;
 import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,13 +29,17 @@ public class TeleportCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length < 2) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
         // No arguments - show usage
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /tp [player] or /tp [player1] [player2]"));
+            Component usage = MessageUtils.error("Usage: ")
+                .append(Component.text("/tp [player]", NamedTextColor.YELLOW))
+                .append(Component.text(" or ", NamedTextColor.RED))
+                .append(Component.text("/tp [player1] [player2]", NamedTextColor.YELLOW));
+            sender.sendMessage(usage);
             return true;
         }
 
@@ -42,15 +48,23 @@ public class TeleportCommand implements CommandExecutor {
             Player player = (Player) sender;
             UUID uuid = player.getUniqueId();
 
+            if (!player.hasPermission("orbiscore.tp")) {
+                player.sendMessage(plugin.getMessageComponent("no-permission"));
+                return true;
+            }
+
             Player target = Bukkit.getPlayer(args[0]);
             if (target == null) {
-                player.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+                Component errorMsg = MessageUtils.error("Player ")
+                    .append(Component.text(args[0], NamedTextColor.WHITE))
+                    .append(Component.text(" is not online!", NamedTextColor.RED));
+                player.sendMessage(errorMsg);
                 return true;
             }
 
             // Check if trying to teleport to self
             if (target.equals(player)) {
-                player.sendMessage(MessageUtils.colorize("&cYou cannot teleport to yourself!"));
+                player.sendMessage(MessageUtils.error("You cannot teleport to yourself!"));
                 return true;
             }
 
@@ -58,14 +72,17 @@ public class TeleportCommand implements CommandExecutor {
             playerDataManager.recordTeleportLocation(uuid, player.getLocation());
 
             player.teleport(target);
-            player.sendMessage(MessageUtils.colorize("&aTeleported to " + target.getName()));
+            
+            Component successMsg = MessageUtils.success("Teleported to ")
+                .append(Component.text(target.getName(), NamedTextColor.WHITE));
+            player.sendMessage(successMsg);
 
             return true;
         }
 
         // Two arguments - teleport player1 to player2
         if (!sender.hasPermission("orbiscore.tp.others")) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+            sender.sendMessage(plugin.getMessageComponent("no-permission"));
             return true;
         }
 
@@ -73,17 +90,23 @@ public class TeleportCommand implements CommandExecutor {
         Player player2 = Bukkit.getPlayer(args[1]);
 
         if (player1 == null) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" is not online!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
         if (player2 == null) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[1])));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[1], NamedTextColor.WHITE))
+                .append(Component.text(" is not online!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
         if (player1.equals(player2)) {
-            sender.sendMessage(MessageUtils.colorize("&cYou cannot teleport a player to themselves!"));
+            sender.sendMessage(MessageUtils.error("You cannot teleport a player to themselves!"));
             return true;
         }
 
@@ -91,8 +114,17 @@ public class TeleportCommand implements CommandExecutor {
         playerDataManager.recordTeleportLocation(player1.getUniqueId(), player1.getLocation());
 
         player1.teleport(player2);
-        sender.sendMessage(MessageUtils.colorize("&aTeleported " + player1.getName() + " to " + player2.getName()));
-        player1.sendMessage(MessageUtils.colorize("&aYou were teleported to " + player2.getName()));
+        
+        Component senderMsg = MessageUtils.success("Teleported ")
+            .append(Component.text(player1.getName(), NamedTextColor.WHITE))
+            .append(Component.text(" to ", NamedTextColor.GREEN))
+            .append(Component.text(player2.getName(), NamedTextColor.WHITE));
+        
+        Component targetMsg = MessageUtils.success("You were teleported to ")
+            .append(Component.text(player2.getName(), NamedTextColor.WHITE));
+
+        sender.sendMessage(senderMsg);
+        player1.sendMessage(targetMsg);
 
         return true;
     }

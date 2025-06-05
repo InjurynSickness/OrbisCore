@@ -2,6 +2,8 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,12 +24,12 @@ public class SpeedCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length < 2) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players or specify a target."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players or specify a target."));
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /speed [value] [player]"));
+            sender.sendMessage(MessageUtils.error("Usage: /speed [value] [player]"));
             return true;
         }
 
@@ -36,11 +38,11 @@ public class SpeedCommand implements CommandExecutor {
         try {
             speed = Float.parseFloat(args[0]);
             if (speed < 0 || speed > 10) {
-                sender.sendMessage(MessageUtils.colorize("&cSpeed must be between 0 and 10!"));
+                sender.sendMessage(MessageUtils.error("Speed must be between 0 and 10!"));
                 return true;
             }
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtils.colorize("&cInvalid speed value! Must be a number between 0 and 10."));
+            sender.sendMessage(MessageUtils.error("Invalid speed value! Must be a number between 0 and 10."));
             return true;
         }
 
@@ -53,7 +55,7 @@ public class SpeedCommand implements CommandExecutor {
 
             // Check permission
             if (!player.hasPermission("orbiscore.speed")) {
-                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                player.sendMessage(plugin.getMessageComponent("no-permission"));
                 return true;
             }
 
@@ -62,16 +64,24 @@ public class SpeedCommand implements CommandExecutor {
             } else {
                 player.setWalkSpeed(mcSpeed);
             }
-            player.sendMessage(MessageUtils.colorize("&aSet your speed to " + speed));
+            
+            String speedType = player.isFlying() ? "fly" : "walk";
+            Component successMsg = MessageUtils.success("Set your " + speedType + " speed to ")
+                .append(Component.text(speed, NamedTextColor.WHITE));
+            player.sendMessage(successMsg);
+            
         } else {
             if (!sender.hasPermission("orbiscore.speed.others")) {
-                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                sender.sendMessage(plugin.getMessageComponent("no-permission"));
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[1])));
+                Component errorMsg = MessageUtils.error("Player ")
+                    .append(Component.text(args[1], NamedTextColor.WHITE))
+                    .append(Component.text(" is not online!", NamedTextColor.RED));
+                sender.sendMessage(errorMsg);
                 return true;
             }
 
@@ -81,8 +91,20 @@ public class SpeedCommand implements CommandExecutor {
                 target.setWalkSpeed(mcSpeed);
             }
 
-            sender.sendMessage(MessageUtils.colorize("&aSet " + target.getName() + "'s speed to " + speed));
-            target.sendMessage(MessageUtils.colorize("&aYour speed was set to " + speed + " by " + sender.getName()));
+            String speedType = target.isFlying() ? "fly" : "walk";
+            
+            Component senderMsg = MessageUtils.success("Set ")
+                .append(Component.text(target.getName(), NamedTextColor.WHITE))
+                .append(Component.text("'s " + speedType + " speed to ", NamedTextColor.GREEN))
+                .append(Component.text(speed, NamedTextColor.WHITE));
+            
+            Component targetMsg = MessageUtils.success("Your " + speedType + " speed was set to ")
+                .append(Component.text(speed, NamedTextColor.WHITE))
+                .append(Component.text(" by ", NamedTextColor.GREEN))
+                .append(Component.text(sender.getName(), NamedTextColor.WHITE));
+
+            sender.sendMessage(senderMsg);
+            target.sendMessage(targetMsg);
         }
 
         return true;

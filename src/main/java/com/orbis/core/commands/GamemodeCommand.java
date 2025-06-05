@@ -2,6 +2,8 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -25,7 +27,7 @@ public class GamemodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players or specify a target."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players or specify a target."));
             return true;
         }
 
@@ -36,40 +38,69 @@ public class GamemodeCommand implements CommandExecutor {
             // Check permission based on gamemode
             String permission = "orbiscore.gamemode." + gameMode.name().toLowerCase();
             if (!player.hasPermission(permission)) {
-                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                player.sendMessage(plugin.getMessageComponent("no-permission"));
                 return true;
             }
 
             if (player.getGameMode() == gameMode) {
-                player.sendMessage(MessageUtils.colorize("&cYou are already in " + gameMode.name().toLowerCase() + " mode!"));
+                Component errorMsg = MessageUtils.error("You are already in ")
+                    .append(Component.text(gameMode.name().toLowerCase(), NamedTextColor.WHITE))
+                    .append(Component.text(" mode!", NamedTextColor.RED));
+                player.sendMessage(errorMsg);
                 return true;
             }
 
             player.setGameMode(gameMode);
-            player.sendMessage(MessageUtils.colorize("&aGamemode set to &f" + gameMode.name().toLowerCase() + "&a!"));
+            
+            Component successMsg = MessageUtils.success("Gamemode set to ")
+                .append(Component.text(gameMode.name().toLowerCase(), NamedTextColor.WHITE))
+                .append(Component.text("!", NamedTextColor.GREEN));
+            player.sendMessage(successMsg);
             return true;
         }
 
         // Set another player's gamemode
         if (!sender.hasPermission("orbiscore.gamemode.others")) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+            sender.sendMessage(plugin.getMessageComponent("no-permission"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" is not online!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
         if (target.getGameMode() == gameMode) {
-            sender.sendMessage(MessageUtils.colorize("&c" + target.getName() + " is already in " + gameMode.name().toLowerCase() + " mode!"));
+            Component errorMsg = Component.text(target.getName(), NamedTextColor.WHITE)
+                .append(Component.text(" is already in ", NamedTextColor.RED))
+                .append(Component.text(gameMode.name().toLowerCase(), NamedTextColor.WHITE))
+                .append(Component.text(" mode!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
         target.setGameMode(gameMode);
-        sender.sendMessage(MessageUtils.colorize("&aSet " + target.getName() + "'s gamemode to &f" + gameMode.name().toLowerCase() + "&a!"));
-        target.sendMessage(MessageUtils.colorize("&aYour gamemode was set to &f" + gameMode.name().toLowerCase() + "&a by " + sender.getName() + "!"));
+        
+        String gamemodeName = gameMode.name().toLowerCase();
+        
+        Component senderMsg = MessageUtils.success("Set ")
+            .append(Component.text(target.getName(), NamedTextColor.WHITE))
+            .append(Component.text("'s gamemode to ", NamedTextColor.GREEN))
+            .append(Component.text(gamemodeName, NamedTextColor.WHITE))
+            .append(Component.text("!", NamedTextColor.GREEN));
+        
+        Component targetMsg = MessageUtils.success("Your gamemode was set to ")
+            .append(Component.text(gamemodeName, NamedTextColor.WHITE))
+            .append(Component.text(" by ", NamedTextColor.GREEN))
+            .append(Component.text(sender.getName(), NamedTextColor.WHITE))
+            .append(Component.text("!", NamedTextColor.GREEN));
+
+        sender.sendMessage(senderMsg);
+        target.sendMessage(targetMsg);
 
         return true;
     }

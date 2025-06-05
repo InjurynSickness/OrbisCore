@@ -2,6 +2,9 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,7 +30,7 @@ public class GodmodeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
@@ -37,7 +40,7 @@ public class GodmodeCommand implements CommandExecutor {
 
             // Check permission
             if (!player.hasPermission("orbiscore.godmode")) {
-                player.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                player.sendMessage(plugin.getMessageComponent("no-permission"));
                 return true;
             }
 
@@ -47,13 +50,16 @@ public class GodmodeCommand implements CommandExecutor {
 
         // With argument - toggle godmode for another player
         if (!sender.hasPermission("orbiscore.godmode.others")) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+            sender.sendMessage(plugin.getMessageComponent("no-permission"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-online", "player", args[0])));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" is not online!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
@@ -62,11 +68,19 @@ public class GodmodeCommand implements CommandExecutor {
         // Notify the command sender if they're not the target
         if (!sender.equals(target)) {
             boolean isInGodmode = isInGodmode(target);
+            Component senderMsg;
             if (isInGodmode) {
-                sender.sendMessage(MessageUtils.colorize("&aEnabled godmode for " + target.getName() + "."));
+                senderMsg = Component.text("⚡ ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                    .append(Component.text("Enabled godmode for ", NamedTextColor.GREEN))
+                    .append(Component.text(target.getName(), NamedTextColor.WHITE))
+                    .append(Component.text(".", NamedTextColor.GREEN));
             } else {
-                sender.sendMessage(MessageUtils.colorize("&cDisabled godmode for " + target.getName() + "."));
+                senderMsg = Component.text("🛡 ", NamedTextColor.GRAY, TextDecoration.BOLD)
+                    .append(Component.text("Disabled godmode for ", NamedTextColor.RED))
+                    .append(Component.text(target.getName(), NamedTextColor.WHITE))
+                    .append(Component.text(".", NamedTextColor.RED));
             }
+            sender.sendMessage(senderMsg);
         }
 
         return true;
@@ -80,17 +94,25 @@ public class GodmodeCommand implements CommandExecutor {
     private void toggleGodmode(Player player) {
         UUID uuid = player.getUniqueId();
         
+        Component message;
         if (godmodePlayers.contains(uuid)) {
             // Disable godmode
             godmodePlayers.remove(uuid);
             player.setInvulnerable(false);
-            player.sendMessage(MessageUtils.colorize("&cGodmode disabled."));
+            
+            message = Component.text("🛡 ", NamedTextColor.GRAY, TextDecoration.BOLD)
+                .append(Component.text("Godmode disabled.", NamedTextColor.RED));
         } else {
             // Enable godmode
             godmodePlayers.add(uuid);
             player.setInvulnerable(true);
-            player.sendMessage(MessageUtils.colorize("&aGodmode enabled."));
+            
+            message = Component.text("⚡ ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                .append(Component.text("Godmode enabled.", NamedTextColor.GREEN))
+                .append(Component.text(" You are now invincible!", NamedTextColor.YELLOW, TextDecoration.ITALIC));
         }
+        
+        player.sendMessage(message);
     }
 
     /**

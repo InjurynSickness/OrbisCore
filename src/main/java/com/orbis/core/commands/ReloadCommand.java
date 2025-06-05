@@ -2,6 +2,9 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,31 +23,54 @@ public class ReloadCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&6=== &fOrbisCore &6==="));
-            sender.sendMessage(MessageUtils.colorize("&7Version: &f" + plugin.getDescription().getVersion()));
-            sender.sendMessage(MessageUtils.colorize("&7Authors: &f" + String.join(", ", plugin.getDescription().getAuthors())));
-            sender.sendMessage(MessageUtils.colorize("&7Commands: &f/orbiscore reload"));
+            // Show plugin information
+            Component header = Component.text("=== ", NamedTextColor.GOLD)
+                .append(Component.text("OrbisCore", NamedTextColor.WHITE, TextDecoration.BOLD))
+                .append(Component.text(" ===", NamedTextColor.GOLD));
+            
+            Component version = MessageUtils.labeledInfo("Version", plugin.getDescription().getVersion());
+            Component authors = MessageUtils.labeledInfo("Authors", String.join(", ", plugin.getDescription().getAuthors()));
+            Component commands = MessageUtils.labeledInfo("Commands", "/orbiscore reload");
+            
+            sender.sendMessage(header);
+            sender.sendMessage(version);
+            sender.sendMessage(authors);
+            sender.sendMessage(commands);
+            
             return true;
         }
 
         if (args[0].equalsIgnoreCase("reload")) {
             if (!sender.hasPermission("orbiscore.reload")) {
-                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("no-permission")));
+                sender.sendMessage(plugin.getMessageComponent("no-permission"));
                 return true;
             }
 
             try {
                 plugin.reloadConfiguration();
-                sender.sendMessage(MessageUtils.colorize(plugin.getMessage("config-reloaded")));
+                
+                Component successMsg = Component.text("✓ ", NamedTextColor.GREEN, TextDecoration.BOLD)
+                    .append(Component.text("Configuration reloaded successfully!", NamedTextColor.GREEN));
+                
+                sender.sendMessage(successMsg);
                 plugin.getLogger().info(sender.getName() + " reloaded the configuration");
+                
             } catch (Exception e) {
-                sender.sendMessage(MessageUtils.colorize("&cError reloading configuration: " + e.getMessage()));
+                Component errorMsg = Component.text("✗ ", NamedTextColor.RED, TextDecoration.BOLD)
+                    .append(Component.text("Error reloading configuration: ", NamedTextColor.RED))
+                    .append(Component.text(e.getMessage(), NamedTextColor.GRAY));
+                
+                sender.sendMessage(errorMsg);
                 plugin.getLogger().severe("Error reloading configuration: " + e.getMessage());
             }
             return true;
         }
 
-        sender.sendMessage(MessageUtils.colorize("&cUnknown subcommand. Use /orbiscore reload"));
+        Component errorMsg = MessageUtils.error("Unknown subcommand. Use ")
+            .append(Component.text("/orbiscore reload", NamedTextColor.YELLOW))
+            .append(Component.text(".", NamedTextColor.RED));
+        
+        sender.sendMessage(errorMsg);
         return true;
     }
 }

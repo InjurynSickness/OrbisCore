@@ -4,6 +4,9 @@ import com.orbis.core.OrbisCore;
 import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.util.LocationConverter;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,31 +31,43 @@ public class TpOfflineCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /tpoffline [player]"));
+            sender.sendMessage(MessageUtils.error("Usage: /tpoffline [player]"));
             return true;
         }
 
         Player player = (Player) sender;
         UUID uuid = player.getUniqueId();
 
+        if (!player.hasPermission("orbiscore.tpoffline")) {
+            player.sendMessage(plugin.getMessageComponent("no-permission"));
+            return true;
+        }
+
         String targetName = args[0].toLowerCase();
 
         // Try to find UUID from username
         UUID targetUuid = playerDataManager.getUuidFromName(targetName);
         if (targetUuid == null) {
-            player.sendMessage(MessageUtils.colorize(plugin.getMessage("player-not-found", "player", args[0])));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" has never been seen on this server!", NamedTextColor.RED));
+            player.sendMessage(errorMsg);
             return true;
         }
 
         // Check if we have a logout location
         String locString = playerDataManager.getPlayerData().getString("players." + targetUuid + ".lastLogoutLocation");
         if (locString == null) {
-            player.sendMessage(MessageUtils.colorize("&cNo stored logout location for " + args[0] + "!"));
+            Component errorMsg = Component.text("❌ ", NamedTextColor.RED)
+                .append(Component.text("No stored logout location for ", NamedTextColor.RED))
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text("!", NamedTextColor.RED));
+            player.sendMessage(errorMsg);
             return true;
         }
 
@@ -61,13 +76,21 @@ public class TpOfflineCommand implements CommandExecutor {
         try {
             location = LocationConverter.stringToLocation(locString);
         } catch (Exception e) {
-            player.sendMessage(MessageUtils.colorize("&cInvalid location data for " + args[0] + "!"));
+            Component errorMsg = Component.text("⚠ ", NamedTextColor.YELLOW)
+                .append(Component.text("Invalid location data for ", NamedTextColor.RED))
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text("!", NamedTextColor.RED));
+            player.sendMessage(errorMsg);
             plugin.getLogger().warning("Invalid location string for " + args[0] + ": " + locString);
             return true;
         }
 
         if (!isValidLocation(location)) {
-            player.sendMessage(MessageUtils.colorize("&cUnsafe or invalid location for " + args[0] + "!"));
+            Component errorMsg = Component.text("🚫 ", NamedTextColor.RED)
+                .append(Component.text("Unsafe or invalid location for ", NamedTextColor.RED))
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text("!", NamedTextColor.RED));
+            player.sendMessage(errorMsg);
             return true;
         }
 
@@ -75,7 +98,26 @@ public class TpOfflineCommand implements CommandExecutor {
         playerDataManager.recordTeleportLocation(uuid, player.getLocation());
 
         player.teleport(location);
-        player.sendMessage(MessageUtils.colorize("&aTeleported to " + args[0] + "'s last logout location"));
+        
+        // Show coordinates in the success message
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        String worldName = location.getWorld().getName();
+        
+        Component successMsg = Component.text("📍 ", NamedTextColor.GREEN)
+            .append(Component.text("Teleported to ", NamedTextColor.GREEN))
+            .append(Component.text(args[0], NamedTextColor.WHITE, TextDecoration.BOLD))
+            .append(Component.text("'s last logout location", NamedTextColor.GREEN));
+            
+        Component locationInfo = Component.text("🗺 ", NamedTextColor.GRAY)
+            .append(Component.text("Location: ", NamedTextColor.GRAY))
+            .append(Component.text("X: " + x + ", Y: " + y + ", Z: " + z, NamedTextColor.WHITE))
+            .append(Component.text(" in ", NamedTextColor.GRAY))
+            .append(Component.text(worldName, NamedTextColor.YELLOW));
+
+        player.sendMessage(successMsg);
+        player.sendMessage(locationInfo);
 
         return true;
     }

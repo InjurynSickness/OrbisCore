@@ -3,6 +3,9 @@ package com.orbis.core.commands;
 import com.orbis.core.OrbisCore;
 import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,12 +30,17 @@ public class BackCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
         Player player = (Player) sender;
         UUID uuid = player.getUniqueId();
+
+        if (!player.hasPermission("orbiscore.back")) {
+            player.sendMessage(plugin.getMessageComponent("no-permission"));
+            return true;
+        }
 
         Location currentLocation = player.getLocation();
 
@@ -44,7 +52,9 @@ public class BackCommand implements CommandExecutor {
             // Store current location for next /back
             playerDataManager.updateTeleportLocation(uuid, currentLocation);
 
-            player.sendMessage(MessageUtils.colorize("&aTeleported to your previous location."));
+            Component successMsg = Component.text("↩ ", NamedTextColor.GREEN, TextDecoration.BOLD)
+                .append(Component.text("Teleported to your previous location.", NamedTextColor.GREEN));
+            player.sendMessage(successMsg);
             return true;
         }
 
@@ -56,12 +66,16 @@ public class BackCommand implements CommandExecutor {
             // Store current location for next /back
             playerDataManager.updateTeleportLocation(uuid, currentLocation);
 
-            player.sendMessage(MessageUtils.colorize("&aTeleported to your last death location."));
+            Component successMsg = Component.text("💀 ", NamedTextColor.DARK_RED)
+                .append(Component.text("Teleported to your last death location.", NamedTextColor.GREEN));
+            player.sendMessage(successMsg);
             return true;
         }
 
         // No location found
-        player.sendMessage(MessageUtils.colorize("&cYou don't have a location to teleport back to!"));
+        Component errorMsg = Component.text("❌ ", NamedTextColor.RED)
+            .append(Component.text("You don't have a location to teleport back to!", NamedTextColor.RED));
+        player.sendMessage(errorMsg);
         return true;
     }
 

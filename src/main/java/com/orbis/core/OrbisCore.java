@@ -7,6 +7,9 @@ import com.orbis.core.listeners.PlayerConnectionListener;
 import com.orbis.core.listeners.PlayerDeathListener;
 import com.orbis.core.listeners.GodmodeListener;
 import com.orbis.core.tab.PlayerTabCompleter;
+import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,6 +27,8 @@ public class OrbisCore extends JavaPlugin {
     private PlayerDataManager playerDataManager;
     private FileConfiguration config;
     private File configFile;
+    private static final LegacyComponentSerializer LEGACY_SERIALIZER = 
+        LegacyComponentSerializer.legacyAmpersand();
 
     @Override
     public void onEnable() {
@@ -95,7 +100,7 @@ public class OrbisCore extends JavaPlugin {
         config.set("settings.max-nickname-length", 16);
         config.set("settings.allow-color-codes", true);
 
-        // Messages
+        // Messages (keeping legacy format for config compatibility)
         config.set("messages.no-permission", "&cYou don't have permission to use this command!");
         config.set("messages.player-not-online", "&cPlayer {player} is not online!");
         config.set("messages.player-not-found", "&cPlayer {player} has never been seen on this server!");
@@ -215,6 +220,7 @@ public class OrbisCore extends JavaPlugin {
         getCommand("gmsp").setTabCompleter(playerTabCompleter);
         getCommand("heal").setTabCompleter(playerTabCompleter);
         getCommand("godmode").setTabCompleter(playerTabCompleter);
+        getCommand("orbvanish").setTabCompleter(playerTabCompleter);
     }
 
     /**
@@ -236,21 +242,51 @@ public class OrbisCore extends JavaPlugin {
     }
 
     /**
-     * Get a formatted message from config
+     * Get a formatted message from config as Component
      *
      * @param key The message key
-     * @return The formatted message
+     * @return The formatted message as Component
+     */
+    public Component getMessageComponent(String key) {
+        String message = config.getString("messages." + key, "&cMessage not found: " + key);
+        return MessageUtils.colorize(message);
+    }
+
+    /**
+     * Get a formatted message from config as Component with placeholders
+     *
+     * @param key The message key
+     * @param placeholders Key-value pairs for placeholders
+     * @return The formatted message as Component
+     */
+    public Component getMessageComponent(String key, String... placeholders) {
+        String message = config.getString("messages." + key, "&cMessage not found: " + key);
+
+        for (int i = 0; i < placeholders.length; i += 2) {
+            if (i + 1 < placeholders.length) {
+                message = message.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
+            }
+        }
+
+        return MessageUtils.colorize(message);
+    }
+
+    /**
+     * Get a formatted message from config (legacy method for backwards compatibility)
+     *
+     * @param key The message key
+     * @return The formatted message as String
      */
     public String getMessage(String key) {
         return config.getString("messages." + key, "&cMessage not found: " + key);
     }
 
     /**
-     * Get a formatted message from config with placeholders
+     * Get a formatted message from config with placeholders (legacy method)
      *
      * @param key The message key
      * @param placeholders Key-value pairs for placeholders
-     * @return The formatted message
+     * @return The formatted message as String
      */
     public String getMessage(String key, String... placeholders) {
         String message = getMessage(key);

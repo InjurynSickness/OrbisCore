@@ -2,6 +2,8 @@ package com.orbis.core.commands;
 
 import com.orbis.core.OrbisCore;
 import com.orbis.core.util.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,39 +24,71 @@ public class HealCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player) && args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.error("This command can only be used by players."));
             return true;
         }
 
         // Heal self
         if (args.length == 0) {
             Player player = (Player) sender;
-            player.setHealth(player.getMaxHealth());
-            player.setFoodLevel(20);
-            player.setSaturation(20);
-            player.sendMessage(MessageUtils.colorize("&aYou have been healed!"));
+            
+            if (!player.hasPermission("orbiscore.heal")) {
+                player.sendMessage(plugin.getMessageComponent("no-permission"));
+                return true;
+            }
+            
+            healPlayer(player);
+            player.sendMessage(MessageUtils.success("You have been healed!"));
             return true;
         }
 
         // Heal another player
         if (!sender.hasPermission("orbiscore.heal.others")) {
-            sender.sendMessage(MessageUtils.colorize("&cYou don't have permission to heal other players!"));
+            sender.sendMessage(MessageUtils.error("You don't have permission to heal other players!"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " is not online!"));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" is not online!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
-        target.setHealth(target.getMaxHealth());
-        target.setFoodLevel(20);
-        target.setSaturation(20);
+        healPlayer(target);
 
-        sender.sendMessage(MessageUtils.colorize("&aHealed " + target.getName() + "!"));
-        target.sendMessage(MessageUtils.colorize("&aYou have been healed by " + sender.getName() + "!"));
+        // Send messages
+        Component senderMsg = MessageUtils.success("Healed ")
+            .append(Component.text(target.getName(), NamedTextColor.WHITE))
+            .append(Component.text("!", NamedTextColor.GREEN));
+        
+        Component targetMsg = MessageUtils.success("You have been healed by ")
+            .append(Component.text(sender.getName(), NamedTextColor.WHITE))
+            .append(Component.text("!", NamedTextColor.GREEN));
+
+        sender.sendMessage(senderMsg);
+        target.sendMessage(targetMsg);
 
         return true;
+    }
+
+    /**
+     * Heal a player completely
+     */
+    private void healPlayer(Player player) {
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(20);
+        player.setSaturation(20);
+        // Clear common negative potion effects
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.POISON);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.WITHER);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.HUNGER);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.WEAKNESS);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.MINING_FATIGUE);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.NAUSEA);
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS);
     }
 }

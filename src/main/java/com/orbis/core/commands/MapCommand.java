@@ -3,7 +3,9 @@ package com.orbis.core.commands;
 import com.orbis.core.OrbisCore;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,7 +26,7 @@ public class MapCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("This command can only be used by players.");
+            sender.sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
             return true;
         }
 
@@ -41,10 +43,17 @@ public class MapCommand implements CommandExecutor {
                 worldName, x, z
         );
 
+        // Create rich hover text with coordinates
+        Component hoverText = Component.text("🗺 Click to open the OrbisMC map", NamedTextColor.GRAY)
+            .appendNewline()
+            .append(Component.text(mapUrl, NamedTextColor.AQUA));
+
         // Create clickable component
         Component mapMessage = Component.text("» ", NamedTextColor.GOLD)
-                .append(Component.text("Click here to open the OrbisMC map on your browser", NamedTextColor.YELLOW)
-                        .clickEvent(ClickEvent.openUrl(mapUrl)));
+                .append(Component.text("Click here to view the map at your location", NamedTextColor.YELLOW)
+                        .decorate(TextDecoration.UNDERLINED)
+                        .clickEvent(ClickEvent.openUrl(mapUrl))
+                        .hoverEvent(HoverEvent.showText(hoverText)));
 
         player.sendMessage(mapMessage);
         return true;

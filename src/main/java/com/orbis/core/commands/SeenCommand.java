@@ -4,6 +4,8 @@ import com.orbis.core.OrbisCore;
 import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.util.MessageUtils;
 import com.orbis.core.util.TimeFormatter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,7 +31,7 @@ public class SeenCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(MessageUtils.colorize("&cUsage: /seen [player]"));
+            sender.sendMessage(MessageUtils.error("Usage: /seen [player]"));
             return true;
         }
 
@@ -41,18 +43,28 @@ public class SeenCommand implements CommandExecutor {
         if (onlinePlayer != null) {
             UUID uuid = onlinePlayer.getUniqueId();
 
-            sender.sendMessage(MessageUtils.colorize("&6=== &f" + onlinePlayer.getName() + " &6==="));
-            sender.sendMessage(MessageUtils.colorize("&7Status: &aCurrently Online"));
+            // Send header
+            sender.sendMessage(MessageUtils.playerHeader(onlinePlayer.getName()));
+            
+            // Status
+            sender.sendMessage(MessageUtils.labeledInfo("Status", 
+                Component.text("Currently Online", NamedTextColor.GREEN).content()));
 
+            // First join
             if (playerData.contains("players." + uuid + ".firstJoin")) {
-                sender.sendMessage(MessageUtils.colorize("&7First joined: &f" + playerData.getString("players." + uuid + ".firstJoin")));
+                sender.sendMessage(MessageUtils.labeledInfo("First joined", 
+                    playerData.getString("players." + uuid + ".firstJoin")));
             }
 
+            // Playtime
             long totalPlaytime = playerDataManager.getTotalPlaytime(uuid);
-            sender.sendMessage(MessageUtils.colorize("&7Playtime: &f" + TimeFormatter.formatTime(totalPlaytime)));
+            sender.sendMessage(MessageUtils.labeledInfo("Playtime", 
+                TimeFormatter.formatTime(totalPlaytime)));
 
+            // IP address (if permission)
             if (sender.hasPermission("orbiscore.seen.ip") && playerData.contains("players." + uuid + ".ip")) {
-                sender.sendMessage(MessageUtils.colorize("&7Last IP: &f" + playerData.getString("players." + uuid + ".ip")));
+                sender.sendMessage(MessageUtils.labeledInfo("Last IP", 
+                    playerData.getString("players." + uuid + ".ip")));
             }
 
             return true;
@@ -61,29 +73,41 @@ public class SeenCommand implements CommandExecutor {
         // Player is not online, check stored data
         UUID uuid = playerDataManager.getUuidFromName(playerName);
         if (uuid == null) {
-            sender.sendMessage(MessageUtils.colorize("&cPlayer " + args[0] + " has never been seen on this server!"));
+            Component errorMsg = MessageUtils.error("Player ")
+                .append(Component.text(args[0], NamedTextColor.WHITE))
+                .append(Component.text(" has never been seen on this server!", NamedTextColor.RED));
+            sender.sendMessage(errorMsg);
             return true;
         }
 
         String storedName = playerData.getString("players." + uuid + ".name");
 
-        sender.sendMessage(MessageUtils.colorize("&6=== &f" + storedName + " &6==="));
+        // Send header
+        sender.sendMessage(MessageUtils.playerHeader(storedName));
 
+        // Last seen
         if (playerData.contains("players." + uuid + ".lastLogout")) {
-            sender.sendMessage(MessageUtils.colorize("&7Last seen: &f" + playerData.getString("players." + uuid + ".lastLogout")));
+            sender.sendMessage(MessageUtils.labeledInfo("Last seen", 
+                playerData.getString("players." + uuid + ".lastLogout")));
         }
 
+        // First join
         if (playerData.contains("players." + uuid + ".firstJoin")) {
-            sender.sendMessage(MessageUtils.colorize("&7First joined: &f" + playerData.getString("players." + uuid + ".firstJoin")));
+            sender.sendMessage(MessageUtils.labeledInfo("First joined", 
+                playerData.getString("players." + uuid + ".firstJoin")));
         }
 
+        // Playtime
         if (playerData.contains("players." + uuid + ".playtime")) {
             long playtime = playerData.getLong("players." + uuid + ".playtime");
-            sender.sendMessage(MessageUtils.colorize("&7Playtime: &f" + TimeFormatter.formatTime(playtime)));
+            sender.sendMessage(MessageUtils.labeledInfo("Playtime", 
+                TimeFormatter.formatTime(playtime)));
         }
 
+        // IP address (if permission)
         if (sender.hasPermission("orbiscore.seen.ip") && playerData.contains("players." + uuid + ".ip")) {
-            sender.sendMessage(MessageUtils.colorize("&7Last IP: &f" + playerData.getString("players." + uuid + ".ip")));
+            sender.sendMessage(MessageUtils.labeledInfo("Last IP", 
+                playerData.getString("players." + uuid + ".ip")));
         }
 
         return true;
