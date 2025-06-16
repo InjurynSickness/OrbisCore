@@ -173,6 +173,18 @@ commands:
     aliases: [oc]
     permission: orbiscore.use
     permission-message: §cYou don't have permission to use this command.
+  top:
+    description: Teleport to the highest safe location above you
+    usage: /top
+    aliases: []
+    permission: orbiscore.top
+    permission-message: §cYou don't have permission to use this command.
+  packs:
+    description: Open the pack loader GUI
+    usage: /packs
+    aliases: []
+    permission: orbiscore.packs
+    permission-message: §cYou don't have permission to use this command.
 
 permissions:
   orbiscore.*:
@@ -223,6 +235,8 @@ permissions:
       orbiscore.reload: true
       orbiscore.use: true
       orbiscore.admin: true
+      orbiscore.top: true
+      orbiscore.packs: true
 
   orbiscore.use:
     description: Allows basic use of OrbisCore commands
@@ -425,4 +439,12 @@ permissions:
 
   orbiscore.reload:
     description: Allows reloading the plugin configuration
+    default: op
+
+  orbiscore.top:
+    description: Allows use of /top command
+    default: true
+
+  orbiscore.packs:
+    description: Allows use of /packs command
     default: op

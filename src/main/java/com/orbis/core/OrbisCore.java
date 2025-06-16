@@ -3,6 +3,7 @@ package com.orbis.core;
 import com.orbis.core.commands.*;
 import com.orbis.core.data.PlayerDataManager;
 import com.orbis.core.listeners.BloodEffectListener;
+import com.orbis.core.listeners.PacksGUIListener;
 import com.orbis.core.listeners.PlayerConnectionListener;
 import com.orbis.core.listeners.PlayerDeathListener;
 import com.orbis.core.listeners.GodmodeListener;
@@ -166,6 +167,7 @@ public class OrbisCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new BloodEffectListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new GodmodeListener(), this);
+        getServer().getPluginManager().registerEvents(new PacksGUIListener(), this);
     }
 
     /**
@@ -203,6 +205,8 @@ public class OrbisCore extends JavaPlugin {
         getCommand("website").setExecutor(new WebsiteCommand(this));
         getCommand("vote").setExecutor(new VoteCommand(this));
         getCommand("orbiscore").setExecutor(new ReloadCommand(this));
+        getCommand("top").setExecutor(new TopCommand(this, playerDataManager));
+        getCommand("packs").setExecutor(new PacksCommand(this));
 
         // Set tab completers
         getCommand("fly").setTabCompleter(playerTabCompleter);
@@ -220,6 +224,7 @@ public class OrbisCore extends JavaPlugin {
         getCommand("gmsp").setTabCompleter(playerTabCompleter);
         getCommand("heal").setTabCompleter(playerTabCompleter);
         getCommand("godmode").setTabCompleter(playerTabCompleter);
+        getCommand("top").setTabCompleter(playerTabCompleter);
         getCommand("orbvanish").setTabCompleter(playerTabCompleter);
     }
 
