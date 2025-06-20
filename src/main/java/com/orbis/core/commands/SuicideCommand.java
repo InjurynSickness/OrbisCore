@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +41,9 @@ public class SuicideCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         UUID uuid = player.getUniqueId();
+
+        // Clean up expired cooldowns before checking
+        cleanupExpiredCooldowns();
 
         // Check cooldown
         if (cooldowns.containsKey(uuid)) {
@@ -88,6 +92,21 @@ public class SuicideCommand implements CommandExecutor {
         }.runTaskLater(plugin, 60L); // 60 ticks = 3 seconds
 
         return true;
+    }
+
+    /**
+     * Clean up expired cooldowns to prevent memory leaks
+     */
+    private void cleanupExpiredCooldowns() {
+        long currentTime = System.currentTimeMillis();
+        Iterator<Map.Entry<UUID, Long>> iterator = cooldowns.entrySet().iterator();
+        
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Long> entry = iterator.next();
+            if (entry.getValue() <= currentTime) {
+                iterator.remove();
+            }
+        }
     }
 
     /**

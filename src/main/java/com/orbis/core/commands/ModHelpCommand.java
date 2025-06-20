@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,6 +43,9 @@ public class ModHelpCommand implements CommandExecutor {
             player.sendMessage(plugin.getMessageComponent("no-permission"));
             return true;
         }
+
+        // Clean up expired cooldowns before checking
+        cleanupExpiredCooldowns();
 
         // Check cooldown
         if (lastHelpRequest.containsKey(uuid)) {
@@ -131,6 +135,21 @@ public class ModHelpCommand implements CommandExecutor {
             player.getName(), reason, modCount));
 
         return true;
+    }
+
+    /**
+     * Clean up expired cooldowns to prevent memory leaks
+     */
+    private void cleanupExpiredCooldowns() {
+        long currentTime = System.currentTimeMillis();
+        Iterator<Map.Entry<UUID, Long>> iterator = lastHelpRequest.entrySet().iterator();
+        
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Long> entry = iterator.next();
+            if (entry.getValue() <= currentTime) {
+                iterator.remove();
+            }
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.orbis.core.listeners;
 
+import com.orbis.core.OrbisCore;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -13,6 +14,12 @@ import org.bukkit.inventory.ItemStack;
  * Handles custom gold ore drop behavior
  */
 public class GoldOreDropListener implements Listener {
+
+    private final OrbisCore plugin;
+
+    public GoldOreDropListener(OrbisCore plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {

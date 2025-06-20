@@ -185,12 +185,12 @@ commands:
     aliases: []
     permission: orbiscore.support
     permission-message: §cYou don't have permission to use this command.
-  docs:
-    description: Show a clickable link to the server documentation
-    usage: /docs
-    aliases: []
-    permission: orbiscore.docs
-    permission-message: §cYou don't have permission to use this command.
+docs:
+  description: Show a clickable link to the server documentation
+  usage: /docs
+  aliases: [guide, tpa, rtp]
+  permission: orbiscore.docs
+  permission-message: §cYou don't have permission to use this command.
   guide:
     description: Show a clickable link to the server documentation (alias for /docs)
     usage: /guide
@@ -208,18 +208,6 @@ commands:
     usage: /modhelp [reason]
     aliases: [helpme]
     permission: orbiscore.modhelp
-    permission-message: §cYou don't have permission to use this command.
-  tpa:
-    description: Teleport request system - redirects to documentation
-    usage: /tpa
-    aliases: []
-    permission: orbiscore.tpa
-    permission-message: §cYou don't have permission to use this command.
-  rtp:
-    description: Random teleport system - redirects to documentation
-    usage: /rtp
-    aliases: []
-    permission: orbiscore.rtp
     permission-message: §cYou don't have permission to use this command.
 
 permissions:
@@ -276,8 +264,6 @@ permissions:
       orbiscore.afk.message: true
       orbiscore.modhelp: true
       orbiscore.modhelp.receive: true
-      orbiscore.tpa: true
-      orbiscore.rtp: true
       orbiscore.chat.item: true
 
   orbiscore.use:
@@ -500,14 +486,6 @@ permissions:
   orbiscore.modhelp.receive:
     description: Allows receiving moderator help requests
     default: op
-
-  orbiscore.tpa:
-    description: Allows use of /tpa command (redirects to docs)
-    default: true
-
-  orbiscore.rtp:
-    description: Allows use of /rtp command (redirects to docs)
-    default: true
 
   orbiscore.chat.item:
     description: Allows using [item] in chat to display held items

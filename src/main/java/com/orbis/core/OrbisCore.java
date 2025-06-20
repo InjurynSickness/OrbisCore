@@ -102,7 +102,6 @@ public class OrbisCore extends JavaPlugin {
         config.set("settings.auto-save-interval", 300); // 5 minutes
         config.set("settings.max-nickname-length", 16);
         config.set("settings.allow-color-codes", true);
-        config.set("settings.double-barrel-chance", 0.05); // 5% chance for double barrels
 
         // Messages (keeping legacy format for config compatibility)
         config.set("messages.no-permission", "&cYou don't have permission to use this command!");
@@ -240,8 +239,6 @@ public class OrbisCore extends JavaPlugin {
         getCommand("guide").setExecutor(new DocsCommand(this)); // Alias for docs
         getCommand("afk").setExecutor(new AFKCommand(this, afkManager));
         getCommand("modhelp").setExecutor(new ModHelpCommand(this));
-        getCommand("tpa").setExecutor(new TpaRtpCommand(this, "tpa"));
-        getCommand("rtp").setExecutor(new TpaRtpCommand(this, "rtp"));
 
         // Set tab completers
         getCommand("fly").setTabCompleter(playerTabCompleter);
