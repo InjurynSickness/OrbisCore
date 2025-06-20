@@ -185,12 +185,12 @@ commands:
     aliases: []
     permission: orbiscore.support
     permission-message: §cYou don't have permission to use this command.
-docs:
-  description: Show a clickable link to the server documentation
-  usage: /docs
-  aliases: [guide, tpa, rtp]
-  permission: orbiscore.docs
-  permission-message: §cYou don't have permission to use this command.
+  docs:
+    description: Show a clickable link to the server documentation
+    usage: /docs
+    aliases: [guide]
+    permission: orbiscore.docs
+    permission-message: §cYou don't have permission to use this command.
   guide:
     description: Show a clickable link to the server documentation (alias for /docs)
     usage: /guide

@@ -151,11 +151,6 @@ public class ChatListener implements Listener {
                 }
             }
         }
-        
-        // Add item type and amount
-        hoverText = hoverText.appendNewline()
-            .append(Component.text("Type: ", NamedTextColor.GRAY))
-            .append(Component.text(formatMaterialName(item.getType().name()), NamedTextColor.WHITE));
             
         if (item.getAmount() > 1) {
             hoverText = hoverText.appendNewline()

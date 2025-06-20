@@ -10,6 +10,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -196,67 +198,63 @@ public class OrbisCore extends JavaPlugin {
     }
 
     /**
-     * Register all commands
+     * Register all commands with null checking
      */
     private void registerCommands() {
         // Create tab completer for player names
         PlayerTabCompleter playerTabCompleter = new PlayerTabCompleter();
 
-        // Register all existing commands
-        getCommand("fly").setExecutor(new FlyCommand(this));
-        getCommand("tp").setExecutor(new TeleportCommand(this, playerDataManager));
-        getCommand("tphere").setExecutor(new TpHereCommand(this, playerDataManager));
-        getCommand("tpoffline").setExecutor(new TpOfflineCommand(this, playerDataManager));
-        getCommand("speed").setExecutor(new SpeedCommand(this));
-        getCommand("flyspeed").setExecutor(new FlySpeedCommand(this));
-        getCommand("sudo").setExecutor(new SudoCommand(this));
-        getCommand("seen").setExecutor(new SeenCommand(this, playerDataManager));
-        getCommand("back").setExecutor(new BackCommand(this, playerDataManager));
-        getCommand("ping").setExecutor(new PingCommand(this));
-        getCommand("broadcast").setExecutor(new BroadcastCommand(this));
-        getCommand("playtime").setExecutor(new PlaytimeCommand(this, playerDataManager));
-        getCommand("nickname").setExecutor(new NicknameCommand(this, playerDataManager));
-        getCommand("gmc").setExecutor(new GamemodeCommand(this, GameMode.CREATIVE));
-        getCommand("gms").setExecutor(new GamemodeCommand(this, GameMode.SURVIVAL));
-        getCommand("gma").setExecutor(new GamemodeCommand(this, GameMode.ADVENTURE));
-        getCommand("gmsp").setExecutor(new GamemodeCommand(this, GameMode.SPECTATOR));
-        getCommand("heal").setExecutor(new HealCommand(this));
-        getCommand("suicide").setExecutor(new SuicideCommand(this));
-        getCommand("toggleblood").setExecutor(new ToggleBloodCommand(this, playerDataManager));
-        getCommand("godmode").setExecutor(new GodmodeCommand(this));
-        getCommand("map").setExecutor(new MapCommand(this));
-        getCommand("discord").setExecutor(new DiscordCommand(this));
-        getCommand("store").setExecutor(new StoreCommand(this));
-        getCommand("website").setExecutor(new WebsiteCommand(this));
-        getCommand("vote").setExecutor(new VoteCommand(this));
-        getCommand("orbiscore").setExecutor(new ReloadCommand(this));
-        getCommand("top").setExecutor(new TopCommand(this, playerDataManager));
-        getCommand("packs").setExecutor(new PacksCommand(this));
+        // Helper method to safely register commands
+        registerCommand("fly", new FlyCommand(this), playerTabCompleter);
+        registerCommand("tp", new TeleportCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("tphere", new TpHereCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("tpoffline", new TpOfflineCommand(this, playerDataManager), null);
+        registerCommand("speed", new SpeedCommand(this), playerTabCompleter);
+        registerCommand("flyspeed", new FlySpeedCommand(this), playerTabCompleter);
+        registerCommand("sudo", new SudoCommand(this), playerTabCompleter);
+        registerCommand("seen", new SeenCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("back", new BackCommand(this, playerDataManager), null);
+        registerCommand("ping", new PingCommand(this), null);
+        registerCommand("broadcast", new BroadcastCommand(this), null);
+        registerCommand("playtime", new PlaytimeCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("nickname", new NicknameCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("gmc", new GamemodeCommand(this, GameMode.CREATIVE), playerTabCompleter);
+        registerCommand("gms", new GamemodeCommand(this, GameMode.SURVIVAL), playerTabCompleter);
+        registerCommand("gma", new GamemodeCommand(this, GameMode.ADVENTURE), playerTabCompleter);
+        registerCommand("gmsp", new GamemodeCommand(this, GameMode.SPECTATOR), playerTabCompleter);
+        registerCommand("heal", new HealCommand(this), playerTabCompleter);
+        registerCommand("suicide", new SuicideCommand(this), null);
+        registerCommand("toggleblood", new ToggleBloodCommand(this, playerDataManager), null);
+        registerCommand("godmode", new GodmodeCommand(this), playerTabCompleter);
+        registerCommand("map", new MapCommand(this), null);
+        registerCommand("discord", new DiscordCommand(this), null);
+        registerCommand("store", new StoreCommand(this), null);
+        registerCommand("website", new WebsiteCommand(this), null);
+        registerCommand("vote", new VoteCommand(this), null);
+        registerCommand("orbiscore", new ReloadCommand(this), null);
+        registerCommand("top", new TopCommand(this, playerDataManager), playerTabCompleter);
+        registerCommand("packs", new PacksCommand(this), null);
+        registerCommand("support", new SupportCommand(this), null);
+        registerCommand("docs", new DocsCommand(this), null);
+        registerCommand("guide", new DocsCommand(this), null); // Alias for docs
+        registerCommand("afk", new AFKCommand(this, afkManager), null);
+        registerCommand("modhelp", new ModHelpCommand(this), null);
+    }
 
-        // Register new commands
-        getCommand("support").setExecutor(new SupportCommand(this));
-        getCommand("docs").setExecutor(new DocsCommand(this));
-        getCommand("guide").setExecutor(new DocsCommand(this)); // Alias for docs
-        getCommand("afk").setExecutor(new AFKCommand(this, afkManager));
-        getCommand("modhelp").setExecutor(new ModHelpCommand(this));
-
-        // Set tab completers
-        getCommand("fly").setTabCompleter(playerTabCompleter);
-        getCommand("tp").setTabCompleter(playerTabCompleter);
-        getCommand("tphere").setTabCompleter(playerTabCompleter);
-        getCommand("speed").setTabCompleter(playerTabCompleter);
-        getCommand("flyspeed").setTabCompleter(playerTabCompleter);
-        getCommand("sudo").setTabCompleter(playerTabCompleter);
-        getCommand("seen").setTabCompleter(playerTabCompleter);
-        getCommand("playtime").setTabCompleter(playerTabCompleter);
-        getCommand("nickname").setTabCompleter(playerTabCompleter);
-        getCommand("gmc").setTabCompleter(playerTabCompleter);
-        getCommand("gms").setTabCompleter(playerTabCompleter);
-        getCommand("gma").setTabCompleter(playerTabCompleter);
-        getCommand("gmsp").setTabCompleter(playerTabCompleter);
-        getCommand("heal").setTabCompleter(playerTabCompleter);
-        getCommand("godmode").setTabCompleter(playerTabCompleter);
-        getCommand("top").setTabCompleter(playerTabCompleter);
+    /**
+     * Helper method to safely register a command with null checking
+     */
+    private void registerCommand(String commandName, CommandExecutor executor, PlayerTabCompleter tabCompleter) {
+        PluginCommand command = getCommand(commandName);
+        if (command != null) {
+            command.setExecutor(executor);
+            if (tabCompleter != null) {
+                command.setTabCompleter(tabCompleter);
+            }
+            getLogger().info("Successfully registered command: /" + commandName);
+        } else {
+            getLogger().warning("Failed to register command: /" + commandName + " (command not found in plugin.yml)");
+        }
     }
 
     /**
