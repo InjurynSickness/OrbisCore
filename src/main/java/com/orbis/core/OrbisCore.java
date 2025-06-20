@@ -1,12 +1,9 @@
 package com.orbis.core;
 
 import com.orbis.core.commands.*;
+import com.orbis.core.data.AFKManager;
 import com.orbis.core.data.PlayerDataManager;
-import com.orbis.core.listeners.BloodEffectListener;
-import com.orbis.core.listeners.PacksGUIListener;
-import com.orbis.core.listeners.PlayerConnectionListener;
-import com.orbis.core.listeners.PlayerDeathListener;
-import com.orbis.core.listeners.GodmodeListener;
+import com.orbis.core.listeners.*;
 import com.orbis.core.tab.PlayerTabCompleter;
 import com.orbis.core.util.MessageUtils;
 import net.kyori.adventure.text.Component;
@@ -26,6 +23,7 @@ import java.util.logging.Level;
 public class OrbisCore extends JavaPlugin {
 
     private PlayerDataManager playerDataManager;
+    private AFKManager afkManager;
     private FileConfiguration config;
     private File configFile;
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = 
@@ -43,6 +41,7 @@ public class OrbisCore extends JavaPlugin {
 
         // Initialize managers
         playerDataManager = new PlayerDataManager(this);
+        afkManager = new AFKManager(this);
 
         // Register event listeners
         registerListeners();
@@ -52,6 +51,9 @@ public class OrbisCore extends JavaPlugin {
 
         // Start auto-save task
         startAutoSaveTask();
+
+        // Start AFK cleanup task
+        startAFKCleanupTask();
 
         getLogger().info("OrbisCore has been enabled!");
         getLogger().info("Loaded configuration with " + getPluginConfig().getKeys(false).size() + " settings");
@@ -100,6 +102,7 @@ public class OrbisCore extends JavaPlugin {
         config.set("settings.auto-save-interval", 300); // 5 minutes
         config.set("settings.max-nickname-length", 16);
         config.set("settings.allow-color-codes", true);
+        config.set("settings.double-barrel-chance", 0.05); // 5% chance for double barrels
 
         // Messages (keeping legacy format for config compatibility)
         config.set("messages.no-permission", "&cYou don't have permission to use this command!");
@@ -125,6 +128,16 @@ public class OrbisCore extends JavaPlugin {
         // Godmode messages
         config.set("messages.godmode.enabled", "&aGodmode enabled.");
         config.set("messages.godmode.disabled", "&cGodmode disabled.");
+
+        // AFK messages
+        config.set("messages.afk.enabled", "&7{player} is now AFK");
+        config.set("messages.afk.disabled", "&a{player} is no longer AFK");
+        config.set("messages.afk.custom", "&7{player} is now AFK: &e{message}");
+
+        // New command messages
+        config.set("messages.modhelp.sent", "&aHelp request sent to moderators!");
+        config.set("messages.modhelp.no-mods", "&cNo moderators are currently online.");
+        config.set("messages.double-barrel", "&6&lDOUBLE BARREL! &eYou received extra loot!");
     }
 
     /**
@@ -160,14 +173,27 @@ public class OrbisCore extends JavaPlugin {
     }
 
     /**
+     * Start AFK cleanup task
+     */
+    private void startAFKCleanupTask() {
+        // Clean up old missed messages every 30 minutes
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            afkManager.clearOldMissedMessages();
+        }, 36000L, 36000L); // 30 minutes in ticks
+    }
+
+    /**
      * Register all event listeners
      */
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this, playerDataManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerConnectionListener(this, playerDataManager, afkManager), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new BloodEffectListener(this, playerDataManager), this);
         getServer().getPluginManager().registerEvents(new GodmodeListener(), this);
         getServer().getPluginManager().registerEvents(new PacksGUIListener(), this);
+        getServer().getPluginManager().registerEvents(new GoldOreDropListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(this, afkManager), this);
+        getServer().getPluginManager().registerEvents(new AFKListener(afkManager), this);
     }
 
     /**
@@ -177,7 +203,7 @@ public class OrbisCore extends JavaPlugin {
         // Create tab completer for player names
         PlayerTabCompleter playerTabCompleter = new PlayerTabCompleter();
 
-        // Register all commands
+        // Register all existing commands
         getCommand("fly").setExecutor(new FlyCommand(this));
         getCommand("tp").setExecutor(new TeleportCommand(this, playerDataManager));
         getCommand("tphere").setExecutor(new TpHereCommand(this, playerDataManager));
@@ -208,6 +234,15 @@ public class OrbisCore extends JavaPlugin {
         getCommand("top").setExecutor(new TopCommand(this, playerDataManager));
         getCommand("packs").setExecutor(new PacksCommand(this));
 
+        // Register new commands
+        getCommand("support").setExecutor(new SupportCommand(this));
+        getCommand("docs").setExecutor(new DocsCommand(this));
+        getCommand("guide").setExecutor(new DocsCommand(this)); // Alias for docs
+        getCommand("afk").setExecutor(new AFKCommand(this, afkManager));
+        getCommand("modhelp").setExecutor(new ModHelpCommand(this));
+        getCommand("tpa").setExecutor(new TpaRtpCommand(this, "tpa"));
+        getCommand("rtp").setExecutor(new TpaRtpCommand(this, "rtp"));
+
         // Set tab completers
         getCommand("fly").setTabCompleter(playerTabCompleter);
         getCommand("tp").setTabCompleter(playerTabCompleter);
@@ -225,7 +260,6 @@ public class OrbisCore extends JavaPlugin {
         getCommand("heal").setTabCompleter(playerTabCompleter);
         getCommand("godmode").setTabCompleter(playerTabCompleter);
         getCommand("top").setTabCompleter(playerTabCompleter);
-        getCommand("orbvanish").setTabCompleter(playerTabCompleter);
     }
 
     /**
@@ -235,6 +269,15 @@ public class OrbisCore extends JavaPlugin {
      */
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
+    }
+
+    /**
+     * Get the AFK manager
+     *
+     * @return The AFK manager
+     */
+    public AFKManager getAFKManager() {
+        return afkManager;
     }
 
     /**

@@ -131,12 +131,6 @@ commands:
     aliases: [god]
     permission: orbiscore.godmode
     permission-message: §cYou don't have permission to use this command.
-  orbvanish:
-    description: Toggle vanish mode for yourself or another player
-    usage: /orbvanish [player]
-    aliases: [ovanish]
-    permission: orbiscore.vanish
-    permission-message: §cYou don't have permission to use this command.
   map:
     description: Show a clickable link to the server map with your current location
     usage: /map
@@ -185,6 +179,48 @@ commands:
     aliases: []
     permission: orbiscore.packs
     permission-message: §cYou don't have permission to use this command.
+  support:
+    description: Show a clickable link to the Support Discord server
+    usage: /support
+    aliases: []
+    permission: orbiscore.support
+    permission-message: §cYou don't have permission to use this command.
+  docs:
+    description: Show a clickable link to the server documentation
+    usage: /docs
+    aliases: []
+    permission: orbiscore.docs
+    permission-message: §cYou don't have permission to use this command.
+  guide:
+    description: Show a clickable link to the server documentation (alias for /docs)
+    usage: /guide
+    aliases: []
+    permission: orbiscore.docs
+    permission-message: §cYou don't have permission to use this command.
+  afk:
+    description: Toggle AFK status with optional custom message
+    usage: /afk [message]
+    aliases: []
+    permission: orbiscore.afk
+    permission-message: §cYou don't have permission to use this command.
+  modhelp:
+    description: Request help from moderators
+    usage: /modhelp [reason]
+    aliases: [helpme]
+    permission: orbiscore.modhelp
+    permission-message: §cYou don't have permission to use this command.
+  tpa:
+    description: Teleport request system - redirects to documentation
+    usage: /tpa
+    aliases: []
+    permission: orbiscore.tpa
+    permission-message: §cYou don't have permission to use this command.
+  rtp:
+    description: Random teleport system - redirects to documentation
+    usage: /rtp
+    aliases: []
+    permission: orbiscore.rtp
+    permission-message: §cYou don't have permission to use this command.
 
 permissions:
   orbiscore.*:
@@ -224,9 +260,6 @@ permissions:
       orbiscore.toggleblood: true
       orbiscore.godmode: true
       orbiscore.godmode.others: true
-      orbiscore.vanish: true
-      orbiscore.vanish.others: true
-      orbiscore.vanish.see: true
       orbiscore.map: true
       orbiscore.discord: true
       orbiscore.store: true
@@ -237,6 +270,15 @@ permissions:
       orbiscore.admin: true
       orbiscore.top: true
       orbiscore.packs: true
+      orbiscore.support: true
+      orbiscore.docs: true
+      orbiscore.afk: true
+      orbiscore.afk.message: true
+      orbiscore.modhelp: true
+      orbiscore.modhelp.receive: true
+      orbiscore.tpa: true
+      orbiscore.rtp: true
+      orbiscore.chat.item: true
 
   orbiscore.use:
     description: Allows basic use of OrbisCore commands
@@ -401,22 +443,6 @@ permissions:
     children:
       orbiscore.godmode: true
 
-  orbiscore.vanish:
-    description: Allows toggling vanish mode for yourself
-    default: op
-
-  orbiscore.vanish.others:
-    description: Allows toggling vanish mode for other players
-    default: op
-    children:
-      orbiscore.vanish: true
-
-  orbiscore.vanish.see:
-    description: Allows seeing vanished players
-    default: op
-    children:
-      orbiscore.vanish: true
-
   orbiscore.map:
     description: Allows use of /map command
     default: true
@@ -448,3 +474,41 @@ permissions:
   orbiscore.packs:
     description: Allows use of /packs command
     default: op
+
+  orbiscore.support:
+    description: Allows use of /support command
+    default: true
+
+  orbiscore.docs:
+    description: Allows use of /docs and /guide commands
+    default: true
+
+  orbiscore.afk:
+    description: Allows use of /afk command
+    default: true
+
+  orbiscore.afk.message:
+    description: Allows setting custom AFK messages
+    default: op
+    children:
+      orbiscore.afk: true
+
+  orbiscore.modhelp:
+    description: Allows requesting help from moderators
+    default: true
+
+  orbiscore.modhelp.receive:
+    description: Allows receiving moderator help requests
+    default: op
+
+  orbiscore.tpa:
+    description: Allows use of /tpa command (redirects to docs)
+    default: true
+
+  orbiscore.rtp:
+    description: Allows use of /rtp command (redirects to docs)
+    default: true
+
+  orbiscore.chat.item:
+    description: Allows using [item] in chat to display held items
+    default: true

@@ -1,6 +1,7 @@
 package com.orbis.core.listeners;
 
 import com.orbis.core.OrbisCore;
+import com.orbis.core.data.AFKManager;
 import com.orbis.core.data.PlayerDataManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,10 +16,12 @@ public class PlayerConnectionListener implements Listener {
 
     private final OrbisCore plugin;
     private final PlayerDataManager playerDataManager;
+    private final AFKManager afkManager;
 
-    public PlayerConnectionListener(OrbisCore plugin, PlayerDataManager playerDataManager) {
+    public PlayerConnectionListener(OrbisCore plugin, PlayerDataManager playerDataManager, AFKManager afkManager) {
         this.plugin = plugin;
         this.playerDataManager = playerDataManager;
+        this.afkManager = afkManager;
     }
 
     @EventHandler
@@ -38,6 +41,9 @@ public class PlayerConnectionListener implements Listener {
 
         // Record quit in player data manager
         playerDataManager.recordPlayerQuit(player);
+
+        // Handle AFK cleanup
+        afkManager.handlePlayerDisconnect(player);
 
         // Debug log
         plugin.getLogger().info("Player " + player.getName() + " data saved successfully.");
